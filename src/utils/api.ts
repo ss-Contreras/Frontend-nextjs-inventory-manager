@@ -23,6 +23,17 @@ const clienteApi = axios.create({
   }),
 });
 
+// Configurar una instancia de Axios para empleados
+const empleadoApi = axios.create({
+  baseURL: 'https://localhost:7069/api/empleados', // Base de todos los endpoints de empleados
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  httpsAgent: new (require('https').Agent)({
+    rejectUnauthorized: false, // Dependiendo si estás usando certificados autofirmados
+  }),
+});
+
 // Obtener categorías (GET)
 export const getCategorias = async () => {
   try {
@@ -132,6 +143,67 @@ export const deleteCliente = async (id: number) => {
     } else {
       console.error('Error desconocido al eliminar el cliente:', error);
     }
+    throw error;
+  }
+};
+
+// Obtener empleados (GET)
+export const getEmpleados = async () => {
+  try {
+    const response = await empleadoApi.get('/');
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener los empleados:', error);
+    throw error;
+  }
+};
+
+// Crear un nuevo empleado (POST)
+export const createEmpleado = async (empleado: {
+  nombre: string;
+  telefono: string;
+  email: string;
+  direccion: string;
+  cargo: string;
+  fechaContratacion: string;
+}) => {
+  try {
+    const response = await empleadoApi.post('/', empleado);
+    return response.data;
+  } catch (error) {
+    console.error('Error al crear el empleado:', error);
+    throw error;
+  }
+};
+
+// Editar un empleado (PUT)
+export const updateEmpleado = async (
+  id: number,
+  empleado: {
+    nombre: string;
+    telefono: string;
+    email: string;
+    direccion: string;
+    cargo: string;
+    fechaContratacion: string;
+  }
+) => {
+  try {
+    const response = await empleadoApi.put(`/${id}`, empleado);
+    return response.data;
+  } catch (error) {
+    console.error('Error al editar el empleado:', error);
+    throw error;
+  }
+};
+
+// Eliminar un empleado (DELETE)
+export const deleteEmpleado = async (id: number) => {
+  try {
+    const response = await empleadoApi.delete(`/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error al eliminar el empleado:', error);
     throw error;
   }
 };

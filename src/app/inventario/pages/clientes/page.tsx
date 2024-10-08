@@ -3,18 +3,19 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import {
-  fetchClientes,
-  addCliente,
-  editCliente,
-  removeCliente,
+    fetchClientes,
+    addCliente,
+    editCliente,
+    removeCliente,
 } from '../../../../store/slices/clienteSlice';
 import { Button } from '@/components/ui/button';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
+// Definimos correctamente el tipo Cliente
 type Cliente = {
-  clienteID: number; // Asegúrate de que clienteID sea solo `number` para evitar errores de incompatibilidad.
+  clienteID: number;  // Cambiado de 'number | null' a simplemente 'number' para evitar problemas
   nombre: string;
   direccion: string;
   telefono: string;
@@ -23,23 +24,34 @@ type Cliente = {
 
 const Clientes = () => {
   const dispatch = useAppDispatch();
-  const { clientes, loading, error } = useAppSelector((state) => state.cliente);
+  const { loading, error, clientes } = useAppSelector((state) => state.cliente);
 
   const [currentCliente, setCurrentCliente] = useState<Cliente | null>(null);
   const [newCliente, setNewCliente] = useState<Cliente>({
-    clienteID: 0, // Debe ser un valor inicial válido, como `0`
+    clienteID: 0,
     nombre: '',
     direccion: '',
     telefono: '',
-    email: '',
+    email: ''
   });
-  
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showDeleteModal, setShowDeleteModal] = useState<{ visible: boolean; clienteID: number | null }>({ visible: false, clienteID: null });
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
 
+  const [localClientes, setLocalClientes] = useState<Cliente[]>([]);
+
+  // Function to fetch clients and set local state
+  const fetchAndSetClientes = async () => {
+    try {
+      const fetchedClientes = await dispatch(fetchClientes()).unwrap();
+      setLocalClientes(fetchedClientes);
+    } catch (error) {
+      toast.error('Error al cargar los clientes');
+    }
+  };
+
   useEffect(() => {
-    dispatch(fetchClientes());
+    fetchAndSetClientes();
   }, [dispatch]);
 
   // Función para eliminar un cliente
@@ -55,7 +67,7 @@ const Clientes = () => {
       toast.success('Cliente eliminado correctamente');
 
       // Re-fetch clients to ensure UI is up to date
-      dispatch(fetchClientes());
+      await fetchAndSetClientes();
     } catch (err) {
       toast.error('Error al eliminar el cliente');
     } finally {
@@ -68,18 +80,18 @@ const Clientes = () => {
   const handleSave = async () => {
     setIsSubmitting(true);
     try {
-      if (showEditModal && currentCliente) {
+      if (showEditModal && currentCliente && currentCliente.clienteID !== null) {
         await dispatch(editCliente({ id: currentCliente.clienteID, cliente: newCliente })).unwrap();
         toast.success('Cliente actualizado correctamente');
 
         // Re-fetch clients to ensure UI is up to date
-        dispatch(fetchClientes());
+        await fetchAndSetClientes();
       } else {
-        await dispatch(addCliente(newCliente)).unwrap();
+        const createdCliente = await dispatch(addCliente(newCliente)).unwrap();
         toast.success('Cliente agregado correctamente');
 
-        // Re-fetch clients to ensure UI is up to date
-        dispatch(fetchClientes());
+        // Agregar el nuevo cliente a la lista local de clientes
+        setLocalClientes((prevClientes) => [...prevClientes, createdCliente]);
       }
 
       // Reiniciar el formulario
@@ -95,11 +107,6 @@ const Clientes = () => {
 
   // Función para activar la edición de un cliente y abrir el modal
   const handleEdit = (cliente: Cliente) => {
-    if (cliente.clienteID === null) {
-      toast.error('El ID del cliente no es válido para editar');
-      return;
-    }
-
     setCurrentCliente(cliente);
     setNewCliente(cliente);
     setShowEditModal(true);
@@ -190,8 +197,8 @@ const Clientes = () => {
           </tr>
         </thead>
         <tbody>
-          {clientes.length > 0 ? (
-            clientes.map((cliente: Cliente, index: number) => (
+          {localClientes.length > 0 ? (
+            localClientes.map((cliente, index) => (
               <tr key={cliente.clienteID ?? `cliente-${index}`} className="even:bg-indigo-50">
                 <td className="py-2 px-4 text-center">{cliente.nombre}</td>
                 <td className="py-2 px-4 text-center">{cliente.direccion}</td>
@@ -227,7 +234,6 @@ const Clientes = () => {
             </tr>
           )}
         </tbody>
-
       </table>
 
       {/* Modal de Confirmación para Eliminar */}
