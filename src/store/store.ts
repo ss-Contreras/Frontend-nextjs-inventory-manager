@@ -1,13 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import clienteReducer from './slices/clienteSlice';
 import categoriaReducer from './slices/categoriaSlice';
-import { empleadoReducer } from './slices/empleadoSlice'; // Cambiar a importación con nombre
+import {empleadoReducer} from './slices/empleadoSlice';
+import productoReducer from './slices/productosSlice';
 
 const store = configureStore({
   reducer: {
     cliente: clienteReducer,
     categoria: categoriaReducer,
-    empleado: empleadoReducer, // Asegúrate de importar correctamente
+    empleado: empleadoReducer,
+    producto: productoReducer, 
   },
 });
 

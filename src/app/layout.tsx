@@ -1,10 +1,10 @@
+// src/app/layout.tsx
+
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
-import ReduxProvider from '../components/ReduxProvider'; // Importar el nuevo componente
+import ReduxProvider from '../components/ReduxProvider';
+import ClientLayout from '../components/ClientLayout'; // Importar el componente cliente
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -24,23 +24,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Envolviendo la aplicación en el ReduxProvider */}
         <ReduxProvider>
-          <div className="flex h-screen bg-gradient-to-r from-indigo-50 to-indigo-100">
-            <Sidebar />
-            <div className="flex flex-col flex-1">
-              <Navbar />
-              {children}
-            </div>
-          </div>
+          <ClientLayout>{children}</ClientLayout>
         </ReduxProvider>
       </body>
     </html>

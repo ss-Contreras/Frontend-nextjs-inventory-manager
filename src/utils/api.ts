@@ -1,5 +1,5 @@
-// utils/api.ts
 import axios from 'axios';
+import { Producto } from '../utils/types';
 
 // Configurar una instancia de Axios para categorías
 const categoriaApi = axios.create({
@@ -206,6 +206,56 @@ export const deleteEmpleado = async (id: number) => {
     console.error('Error al eliminar el empleado:', error);
     throw error;
   }
+};
+
+const productoApi = axios.create({
+  baseURL: 'https://localhost:7069/api/productos',
+});
+
+export const getProductos = async (): Promise<Producto[]> => {
+  const response = await productoApi.get('/');
+  return response.data;
+};
+
+export const createProducto = async (producto: Producto): Promise<Producto> => {
+  const formData = new FormData();
+  formData.append('nombre', producto.nombre);
+  formData.append('categoriaID', producto.categoriaID.toString());
+  formData.append('proveedorID', producto.proveedorID.toString());
+  formData.append('precioCompra', producto.precioCompra.toString());
+  formData.append('precioVenta', producto.precioVenta.toString());
+  formData.append('stock', producto.stock.toString());
+  formData.append('stockMinimo', producto.stockMinimo.toString());
+
+  if (producto.imagen) {
+    formData.append('imagen', producto.imagen);
+  }
+
+  const response = await productoApi.post('/', formData);
+  return response.data;
+};
+
+export const updateProducto = async (productoID: number, producto: Producto): Promise<Producto> => {
+  const formData = new FormData();
+  formData.append('productoID', productoID.toString());
+  formData.append('nombre', producto.nombre);
+  formData.append('categoriaID', producto.categoriaID.toString());
+  formData.append('proveedorID', producto.proveedorID.toString());
+  formData.append('precioCompra', producto.precioCompra.toString());
+  formData.append('precioVenta', producto.precioVenta.toString());
+  formData.append('stock', producto.stock.toString());
+  formData.append('stockMinimo', producto.stockMinimo.toString());
+
+  if (producto.imagen) {
+    formData.append('imagen', producto.imagen);
+  }
+
+  const response = await productoApi.put(`/${productoID}`, formData);
+  return response.data;
+};
+
+export const deleteProducto = async (productoID: number): Promise<void> => {
+  await productoApi.delete(`/${productoID}`);
 };
 
 export const clienteApiActions = {
